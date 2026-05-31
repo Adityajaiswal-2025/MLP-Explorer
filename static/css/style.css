@@ -219,7 +219,10 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
 }
+
 
 .section-title {
     font-family: var(--font-heading);
