@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Representation Power of MLPs - Interactive Educational Hub</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="background-glow"></div>
+    <div class="app-container">
+        
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-brain glow-icon"></i>
+                <div class="title-subtext">
+                    <h1>Representation Power of MLPs</h1>
+                    <p>Interactively explore how Multilayer Perceptrons bend space, learn features, and approximate complex functions.</p>
+                </div>
+            </div>
+            <nav class="app-tabs">
+                <button class="tab-btn active" data-tab="playground">
+                    <i class="fa-solid fa-gamepad"></i> Playground
+                </button>
+                <button class="tab-btn" data-tab="comparison">
+                    <i class="fa-solid fa-columns"></i> Comparison Mode
+                </button>
+                <button class="tab-btn" data-tab="education">
+                    <i class="fa-solid fa-book-open"></i> Educational Hub
+                </button>
+            </nav>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- SECTION 1: PLAYGROUND -->
+            <section id="playground-sec" class="tab-content active">
+                <div class="playground-layout">
+                    
+                    <!-- Left Control Sidebar -->
+                    <aside class="control-panel glass-card">
+                        <h2 class="section-title"><i class="fa-solid fa-sliders"></i> Network Parameters</h2>
+                        
+                        <!-- Dataset Selection Group -->
+                        <div class="control-group">
+                            <label class="group-label">1. Select Dataset</label>
+                            <div class="dataset-grid">
+                                <button class="dataset-btn active" data-dataset="xor">
+                                    <span class="btn-icon">⛶</span> XOR
+                                </button>
+                                <button class="dataset-btn" data-dataset="spiral">
+                                    <span class="btn-icon">🌀</span> Spiral
+                                </button>
+                                <button class="dataset-btn" data-dataset="moons">
+                                    <span class="btn-icon">🌙</span> Moons
+                                </button>
+                                <button class="dataset-btn" data-dataset="circles">
+                                    <span class="btn-icon">⭕</span> Circles
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Noise Level -->
+                        <div class="control-group">
+                            <div class="label-val-row">
+                                <label for="noise-slider">Dataset Noise</label>
+                                <span id="noise-val" class="badge">0.10</span>
+                            </div>
+                            <input type="range" id="noise-slider" min="0.0" max="0.3" step="0.05" value="0.10" class="range-slider">
+                        </div>
+
+                        <!-- Hyperparameters -->
+                        <div class="control-group">
+                            <label class="group-label">2. Hyperparameters</label>
+                            
+                            <div class="label-val-row mini-spacing">
+                                <label for="lr-select">Learning Rate</label>
+                                <select id="lr-select" class="styled-select">
+                                    <option value="0.001">0.001 (Slow)</option>
+                                    <option value="0.01">0.01</option>
+                                    <option value="0.03" selected>0.03 (Recommended)</option>
+                                    <option value="0.1">0.1 (Fast)</option>
+                                    <option value="0.3">0.3 (Very Fast)</option>
+                                </select>
+                            </div>
+
+                            <div class="label-val-row mini-spacing">
+                                <label for="activation-select">Activation Function</label>
+                                <select id="activation-select" class="styled-select">
+                                    <option value="relu" selected>ReLU (Rectified Linear)</option>
+                                    <option value="sigmoid">Sigmoid (Logistic)</option>
+                                    <option value="tanh">Tanh (Hyperbolic Tangent)</option>
+                                </select>
+                            </div>
+
+                            <div class="label-val-row">
+                                <label for="epochs-slider">Training Epochs</label>
+                                <span id="epochs-val" class="badge">150</span>
+                            </div>
+                            <input type="range" id="epochs-slider" min="10" max="500" step="10" value="150" class="range-slider">
+                        </div>
+
+                        <!-- Architecture Configurator -->
+                        <div class="control-group">
+                            <label class="group-label">3. Network Topology</label>
+                            <div class="label-val-row">
+                                <label for="layers-slider">Hidden Layers</label>
+                                <span id="layers-val" class="badge">2</span>
+                            </div>
+                            <input type="range" id="layers-slider" min="1" max="5" step="1" value="2" class="range-slider">
+                            
+                            <!-- Dynamic Neuron Slider Containers -->
+                            <div id="neurons-sliders-container" class="neurons-sliders">
+                                <!-- Populated dynamically by main.js -->
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button id="train-btn" class="glow-button primary-btn">
+                                <i class="fa-solid fa-play"></i> Train Neural Network
+                            </button>
+                        </div>
+
+                        <!-- Training Stats Panel -->
+                        <div id="stats-panel" class="stats-panel hidden">
+                            <div class="stat-row">
+                                <span>Training Epoch:</span>
+                                <span id="stat-epoch" class="stat-value">0 / 0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Current Loss:</span>
+                                <span id="stat-loss" class="stat-value">0.0000</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Current Accuracy:</span>
+                                <span id="stat-acc" class="stat-value">0.0%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div id="progress-bar" class="progress-bar"></div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Main Visualization Grid -->
+                    <div class="visualization-grid">
+                        
+                        <!-- Card 1: Input Dataset / Decision Boundary -->
+                        <div class="visual-card glass-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-chart-scatter"></i> Decision Boundary</h3>
+                                <p class="card-subtitle">Real-time classification boundary & data points</p>
+                            </div>
+                            <div class="plotly-container" id="decision-boundary-plot"></div>
+                        </div>
+
+                        <!-- Card 2: Neural Network Architecture -->
+                        <div class="visual-card glass-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-network-wired"></i> Network Architecture</h3>
+                                <p class="card-subtitle">Live weights, neuron activations, and signal propagation</p>
+                            </div>
+                            <div class="canvas-container">
+                                <canvas id="network-canvas"></canvas>
+                                <div class="canvas-legend">
+                                    <span class="legend-item"><span class="legend-color pos-weight"></span> Positive Weight</span>
+                                    <span class="legend-item"><span class="legend-color neg-weight"></span> Negative Weight</span>
+                                    <span class="legend-item"><span class="legend-pulse"></span> Feedforward Pulse</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Hidden Representation space -->
+                        <div class="visual-card glass-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-shuffle"></i> Feature Learning (Hidden Space)</h3>
+                                <div class="card-header-actions">
+                                    <select id="rep-layer-select" class="styled-select mini-select">
+                                        <!-- Populated dynamically by main.js based on layers -->
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="card-explanation">Watch how coordinates are bent and warped in this layer's representation space to make classes linearly separable.</p>
+                            <div class="plotly-container" id="hidden-representation-plot"></div>
+                        </div>
+
+                        <!-- Card 4: Analytics (Loss and Accuracy Curves) -->
+                        <div class="visual-card glass-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-chart-line"></i> Training Analytics</h3>
+                                <p class="card-subtitle">Convergence curve over training epochs</p>
+                            </div>
+                            <div class="plotly-container" id="analytics-plot"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Playback Control Bar (Sticky Bottom overlay) -->
+                <div id="playback-bar" class="playback-bar glass-card hidden">
+                    <div class="playback-controls">
+                        <button id="playback-prev" class="playback-btn" title="Previous epoch"><i class="fa-solid fa-backward-step"></i></button>
+                        <button id="playback-play" class="playback-btn play-active" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                        <button id="playback-next" class="playback-btn" title="Next epoch"><i class="fa-solid fa-forward-step"></i></button>
+                    </div>
+                    <div class="timeline-container">
+                        <span class="timeline-label">Epoch <span id="current-timeline-epoch">1</span></span>
+                        <input type="range" id="timeline-slider" min="1" max="100" value="1" class="timeline-slider">
+                        <span class="timeline-label">Total: <span id="total-timeline-epochs">100</span></span>
+                    </div>
+                    <div class="speed-container">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <input type="range" id="speed-slider" min="50" max="800" step="50" value="200" class="speed-slider" title="Speed (ms per frame)">
+                        <span id="speed-label" class="badge">200ms</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: COMPARISON MODE -->
+            <section id="comparison-sec" class="tab-content">
+                <div class="comparison-layout">
+                    <!-- Config Controls for Model A & B -->
+                    <div class="comparison-configs glass-card">
+                        <h2><i class="fa-solid fa-scale-balanced"></i> Set Up Side-by-Side Comparison</h2>
+                        <div class="comp-dataset-selector">
+                            <label>Choose Dataset for Comparison: </label>
+                            <div class="dataset-grid inline-grid">
+                                <button class="dataset-btn comp-dataset active" data-dataset="xor">XOR</button>
+                                <button class="dataset-btn comp-dataset" data-dataset="spiral">Spiral</button>
+                                <button class="dataset-btn comp-dataset" data-dataset="moons">Moons</button>
+                                <button class="dataset-btn comp-dataset" data-dataset="circles">Circles</button>
+                            </div>
+                            <div class="noise-inline-control">
+                                <label for="comp-noise-slider">Noise: </label>
+                                <input type="range" id="comp-noise-slider" min="0.0" max="0.3" step="0.05" value="0.10" class="range-slider inline-slider">
+                                <span id="comp-noise-val" class="badge">0.10</span>
+                            </div>
+                        </div>
+
+                        <div class="config-columns-grid">
+                            <!-- Model A Config -->
+                            <div class="model-config-box model-a-box">
+                                <h3><span class="model-badge badge-a">Model A</span> Small MLP</h3>
+                                <div class="comp-control-row">
+                                    <label>Hidden Layers:</label>
+                                    <select id="comp-a-layers" class="styled-select">
+                                        <option value="1" selected>1 Hidden Layer</option>
+                                        <option value="2">2 Hidden Layers</option>
+                                        <option value="3">3 Hidden Layers</option>
+                                    </select>
+                                </div>
+                                <div class="comp-control-row">
+                                    <label>Neurons per Layer:</label>
+                                    <input type="text" id="comp-a-neurons" class="styled-input" value="2" placeholder="e.g. 2">
+                                    <small class="hint">Neurons per layer (comma-separated: e.g. 2 or 4,2)</small>
+                                </div>
+                                <div class="comp-control-row">
+                                    <label>Activation:</label>
+                                    <select id="comp-a-activation" class="styled-select">
+                                        <option value="relu">ReLU</option>
+                                        <option value="sigmoid" selected>Sigmoid</option>
+                                        <option value="tanh">Tanh</option>
+                                    </select>
+                                </div>
+                                <div class="comp-control-row">
+                                    <label>Learning Rate:</label>
+                                    <select id="comp-a-lr" class="styled-select">
+                                        <option value="0.01">0.01</option>
+                                        <option value="0.03" selected>0.03</option>
+                                        <option value="0.1">0.1</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Model B Config -->
+                            <div class="model-config-box model-b-box">
+                                <h3><span class="model-badge badge-b">Model B</span> Large MLP</h3>
+                                <div class="comp-control-row">
+                                    <label>Hidden Layers:</label>
+                                    <select id="comp-b-layers" class="styled-select">
+                                        <option value="1">1 Hidden Layer</option>
+                                        <option value="2">2 Hidden Layers</option>
+                                        <option value="3" selected>3 Hidden Layers</option>
+                                    </select>
+                                </div>
+                                <div class="comp-control-row">
+                                    <label>Neurons per Layer:</label>
+                                    <input type="text" id="comp-b-neurons" class="styled-input" value="8,8,4" placeholder="e.g. 8,8,4">
+                                    <small class="hint">Neurons per layer (comma-separated: e.g. 8,8,4)</small>
+                                </div>
+                                <div class="comp-control-row">
+                                    <label>Activation:</label>
+                                    <select id="comp-b-activation" class="styled-select">
+                                        <option value="relu" selected>ReLU</option>
+                                        <option value="sigmoid">Sigmoid</option>
+                                        <option value="tanh">Tanh</option>
+                                    </select>
+                                </div>
+                                <div class="comp-control-row">
+                                    <label>Learning Rate:</label>
+                                    <select id="comp-b-lr" class="styled-select">
+                                        <option value="0.01">0.01</option>
+                                        <option value="0.03" selected>0.03</option>
+                                        <option value="0.1">0.1</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="comp-action-row">
+                            <button id="compare-btn" class="glow-button compare-gradient-btn">
+                                <i class="fa-solid fa-code-compare"></i> Train & Compare Models
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Results Dashboard -->
+                    <div class="comparison-results-grid">
+                        
+                        <!-- Model A Results column -->
+                        <div class="model-result-panel glass-card">
+                            <div class="panel-header header-a">
+                                <h3>Model A Results</h3>
+                                <div id="comp-metrics-a" class="comp-metrics-summary">
+                                    <span>Accuracy: <strong id="comp-acc-a">-</strong></span>
+                                    <span>Loss: <strong id="comp-loss-a">-</strong></span>
+                                </div>
+                            </div>
+                            <div class="comp-results-wrapper">
+                                <h4>Decision Boundary (Model A)</h4>
+                                <div class="plotly-container comp-plot" id="comp-decision-a"></div>
+                                
+                                <h4>Last Hidden Layer Space (Model A)</h4>
+                                <div class="plotly-container comp-plot" id="comp-hidden-a"></div>
+                            </div>
+                        </div>
+
+                        <!-- Model B Results column -->
+                        <div class="model-result-panel glass-card">
+                            <div class="panel-header header-b">
+                                <h3>Model B Results</h3>
+                                <div id="comp-metrics-b" class="comp-metrics-summary">
+                                    <span>Accuracy: <strong id="comp-acc-b">-</strong></span>
+                                    <span>Loss: <strong id="comp-loss-b">-</strong></span>
+                                </div>
+                            </div>
+                            <div class="comp-results-wrapper">
+                                <h4>Decision Boundary (Model B)</h4>
+                                <div class="plotly-container comp-plot" id="comp-decision-b"></div>
+                                
+                                <h4>Last Hidden Layer Space (Model B)</h4>
+                                <div class="plotly-container comp-plot" id="comp-hidden-b"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: EDUCATIONAL HUB -->
+            <section id="education-sec" class="tab-content">
+                <div class="education-layout">
+                    
+                    <!-- Left Sidebar (TOC) -->
+                    <aside class="education-toc glass-card">
+                        <h3>Topics</h3>
+                        <ul>
+                            <li><a href="#edu-mlp" class="toc-link active">1. What is an MLP?</a></li>
+                            <li><a href="#edu-hidden" class="toc-link">2. The Role of Hidden Layers</a></li>
+                            <li><a href="#edu-activation" class="toc-link">3. Activation Functions</a></li>
+                            <li><a href="#edu-universal" class="toc-link">4. Universal Approximation</a></li>
+                            <li><a href="#edu-fitting" class="toc-link">5. Underfitting vs. Overfitting</a></li>
+                        </ul>
+                    </aside>
+
+                    <!-- Right Educational Articles -->
+                    <div class="education-articles">
+                        
+                        <!-- Article 1: What is an MLP -->
+                        <article id="edu-mlp" class="edu-card glass-card">
+                            <h2>1. Representation Power of Multilayer Perceptrons</h2>
+                            <p>A <strong>Multilayer Perceptron (MLP)</strong> is a class of feedforward artificial neural network. It consists of at least three layers of nodes: an input layer, a hidden layer, and an output layer. Except for the input nodes, each node is a neuron that uses a nonlinear activation function.</p>
+                            
+                            <div class="edu-formula">
+                                <p class="formula-title">Mathematical Neuron Model</p>
+                                <p class="latex-fallback">y = &sigma;( &sum; w<sub>i</sub> x<sub>i</sub> + b )</p>
+                                <p class="formula-desc">Where <strong>x</strong> represents inputs, <strong>w</strong> represents weights, <strong>b</strong> is bias, and <strong>&sigma;</strong> is the activation function.</p>
+                            </div>
+
+                            <p>What makes MLPs exceptionally powerful is their ability to classify data that is not linearly separable. A single-layer perceptron can only draw a straight line (or plane) to separate two classes, failing on simple relationships like <strong>XOR</strong>. By nesting multiple layers together, an MLP can perform coordinate transformations, warping space so that complex curves are flattened out and become linearly separable by the final layer.</p>
+                        </article>
+
+                        <!-- Article 2: The Role of Hidden Layers -->
+                        <article id="edu-hidden" class="edu-card glass-card">
+                            <h2>2. Bending Space: The Role of Hidden Layers</h2>
+                            <p>To understand hidden layers, think of them as performing a series of coordinate transformations. When a dataset (like XOR or a spiral) is passed through a hidden layer, the layer maps the 2D input coordinates onto a new, high-dimensional space defined by the activations of the hidden neurons.</p>
+                            
+                            <div class="warping-demo-card">
+                                <h4><i class="fa-solid fa-lightbulb text-teal"></i> Interactive Feature space Insight</h4>
+                                <p>Look at the <strong>Feature Learning (Hidden Space)</strong> plot in our playground! For the XOR problem:
+                                <ul>
+                                    <li>In the input space (2D), Quadrants I & III belong to class 1, while Quadrants II & IV belong to class 0. A straight line cannot separate them.</li>
+                                    <li>After passing through a hidden layer with 2 neurons, the four clusters are warped. The activation values map them to a new 2D grid where class 1 clusters move to one side, and class 0 clusters move to the other.</li>
+                                    <li>In this new space, the classes <em>can</em> be separated by a single straight line, which the output layer easily fits!</li>
+                                </ul>
+                                Adding more layers allows the network to build a hierarchy of features. Earlier layers represent simple local details (like lines and edges), while deeper layers combine them into global shapes and complex manifolds.</p>
+                            </div>
+                        </article>
+
+                        <!-- Article 3: Activation Functions -->
+                        <article id="edu-activation" class="edu-card glass-card">
+                            <h2>3. The Spark of Non-Linearity: Activation Functions</h2>
+                            <p>Without activation functions, a multilayer neural network collapses into a simple linear model. Let's look at the math: if all layers are linear, we have:</p>
+                            <div class="edu-formula">
+                                <p class="latex-fallback">y = W<sub>2</sub> ( W<sub>1</sub> x + b<sub>1</sub> ) + b<sub>2</sub> = (W<sub>2</sub>W<sub>1</sub>) x + (W<sub>2</sub>b<sub>1</sub> + b<sub>2</sub>) = W' x + b'</p>
+                            </div>
+                            <p>No matter how many hidden layers are added, the composition of linear transformations is always just another single linear transformation. Therefore, the network cannot learn non-linear decision boundaries.</p>
+                            
+                            <h3>Common Activation Functions:</h3>
+                            <div class="activation-explanation-grid">
+                                <div class="act-item">
+                                    <strong>ReLU (Rectified Linear Unit)</strong>
+                                    <p class="latex-fallback">f(x) = max(0, x)</p>
+                                    <p>The standard choice for modern deep networks. It is computationally efficient and mitigates the vanishing gradient problem. However, it can suffer from "dying ReLU" if neurons receive gradients that push weights to always output zero.</p>
+                                </div>
+                                <div class="act-item">
+                                    <strong>Sigmoid</strong>
+                                    <p class="latex-fallback">f(x) = 1 / (1 + e<sup>-x</sup>)</p>
+                                    <p>Outputs values between 0 and 1, representing a probability. Often used in the output layer for binary classification. Can cause "vanishing gradients" during training since its derivative is close to zero for large values.</p>
+                                </div>
+                                <div class="act-item">
+                                    <strong>Tanh (Hyperbolic Tangent)</strong>
+                                    <p class="latex-fallback">f(x) = (e<sup>x</sup> - e<sup>-x</sup>) / (e<sup>x</sup> + e<sup>-x</sup>)</p>
+                                    <p>Outputs values between -1 and 1. Zero-centered, which makes training slightly easier than Sigmoid, but still suffers from vanishing gradients when neurons saturate.</p>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Article 4: Universal Approximation Theorem -->
+                        <article id="edu-universal" class="edu-card glass-card">
+                            <h2>4. Universal Approximation Theorem</h2>
+                            <p>The <strong>Universal Approximation Theorem</strong> (proven by George Cybenko in 1989 for Sigmoid activations, and later generalized by Kurt Hornik in 1991) is a fundamental pillar of Deep Learning. It states:</p>
+                            
+                            <blockquote>
+                                "A feedforward neural network with a <strong>single hidden layer</strong> containing a finite number of neurons can approximate any continuous function on compact subsets of &mathbb;R<sup>n</sup> to arbitrary accuracy, provided it uses a non-constant, bounded, and continuous activation function."
+                            </blockquote>
+
+                            <p>In simple terms, this means that even a simple 3-layer network (1 hidden layer) can theoretically learn <em>any</em> pattern, no matter how complex, given enough neurons. However, the theorem doesn't guarantee that the model is <em>learnable</em> (optimizable with standard algorithms like Gradient Descent) or that a single wide layer is efficient. In practice, **deeper** networks (adding more hidden layers rather than just widening one) learn hierarchical features and generalize far better with fewer total parameters.</p>
+                        </article>
+
+                        <!-- Article 5: Underfitting vs. Overfitting -->
+                        <article id="edu-fitting" class="edu-card glass-card">
+                            <h2>5. Network Capacity: Underfitting vs. Overfitting</h2>
+                            <p>The capacity of an MLP is determined by its architecture (number of layers and neurons per layer) and the duration of training. Finding the right balance is key to creating model representations that generalize to unseen data.</p>
+                            
+                            <div class="capacity-cards-grid">
+                                <div class="capacity-card underfit">
+                                    <h4><i class="fa-solid fa-triangle-exclamation text-orange"></i> Underfitting</h4>
+                                    <ul>
+                                        <li><strong>Cause:</strong> Network is too simple (e.g. 1 layer with 1 or 2 neurons) or trained for too few epochs.</li>
+                                        <li><strong>Sign:</strong> High training loss and low accuracy. The decision boundary is a straight line or very simple curve, failing to split the datasets (like XOR or Spiral).</li>
+                                    </ul>
+                                </div>
+                                <div class="capacity-card overfit">
+                                    <h4><i class="fa-solid fa-spider text-red"></i> Overfitting</h4>
+                                    <ul>
+                                        <li><strong>Cause:</strong> Network is overly complex (e.g. 5 layers with 10 neurons each) or trained for too long on noisy datasets.</li>
+                                        <li><strong>Sign:</strong> Very low training loss but fails to generalize. The decision boundary becomes jagged, wrapping closely around individual noise points to fit them, rather than capturing the global trend.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </article>
+
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/network_visualizer.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
